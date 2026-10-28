@@ -75,7 +75,9 @@ func write(_ channel: IOBluetoothRFCOMMChannel, _ data: Data) {
 }
 
 @_silgen_name("responsibility_spawnattrs_setdisclaim")
-func responsibility_spawnattrs_setdisclaim(_ attrs: UnsafeMutablePointer<posix_spawnattr_t?>, _ disclaim: Int32) -> Int32
+func responsibility_spawnattrs_setdisclaim(
+    _ attrs: UnsafeMutablePointer<posix_spawnattr_t?>, _ disclaim: Int32
+) -> Int32
 
 /// macOS asks the process responsible for us (the terminal or app that started the tool) for
 /// Bluetooth access, and kills us if that one has no usage description. So we run ourselves again as

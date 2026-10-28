@@ -12,7 +12,14 @@ fn main() {
     let out = format!("{}/xm4-rfcomm", env::var("OUT_DIR").unwrap());
     let swiftc = Command::new("swiftc")
         .args(["-O", "-o", &out, "macos/xm4-rfcomm.swift"])
-        .args(["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__info_plist"])
+        .args([
+            "-Xlinker",
+            "-sectcreate",
+            "-Xlinker",
+            "__TEXT",
+            "-Xlinker",
+            "__info_plist",
+        ])
         .args(["-Xlinker", "macos/Info.plist"])
         .status()
         .expect("cannot run swiftc; install the Xcode command line tools");

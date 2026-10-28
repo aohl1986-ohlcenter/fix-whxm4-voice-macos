@@ -27,7 +27,15 @@ impl Uuid {
 impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = format!("{:032x}", self.0);
-        write!(f, "{}-{}-{}-{}-{}", &s[0..8], &s[8..12], &s[12..16], &s[16..20], &s[20..32])
+        write!(
+            f,
+            "{}-{}-{}-{}-{}",
+            &s[0..8],
+            &s[8..12],
+            &s[12..16],
+            &s[16..20],
+            &s[20..32]
+        )
     }
 }
 
@@ -65,7 +73,9 @@ impl Headphones {
             .args(["list", &MDR_UUID.to_string()])
             .stderr(Stdio::inherit())
             .output()
-            .map_err(|e| io::Error::new(e.kind(), format!("cannot run {}: {e}", helper().display())))?;
+            .map_err(|e| {
+                io::Error::new(e.kind(), format!("cannot run {}: {e}", helper().display()))
+            })?;
         if !output.status.success() {
             return Err(io::Error::other("cannot list Bluetooth devices"));
         }
@@ -85,7 +95,10 @@ impl Headphones {
             )),
             1 => Ok(found.pop().unwrap()),
             _ => {
-                let names: Vec<String> = found.iter().map(|h| format!("\n  {} ({})", h.name, h.address)).collect();
+                let names: Vec<String> = found
+                    .iter()
+                    .map(|h| format!("\n  {} ({})", h.name, h.address))
+                    .collect();
                 Err(io::Error::other(format!(
                     "several connected devices offer Sony's control channel:{}\n\
                      Disconnect all but the WH-1000XM4.",
@@ -98,7 +111,8 @@ impl Headphones {
     /// Opens the channel with SDP UUID `uuid`, `label` naming it in errors and logs. With
     /// `verbose`, every byte sent and received is logged to stderr.
     pub fn open(&self, uuid: Uuid, label: &'static str, verbose: bool) -> io::Result<Channel> {
-        let opening = |e: String| io::Error::other(format!("cannot open the {label} channel ({uuid}): {e}"));
+        let opening =
+            |e: String| io::Error::other(format!("cannot open the {label} channel ({uuid}): {e}"));
         let mut child = Command::new(helper())
             .args(["open", &self.address, &uuid.to_string()])
             .stdin(Stdio::piped())
@@ -117,7 +131,9 @@ impl Headphones {
                     Some(tx) => {
                         let _ = tx.send(line);
                     }
-                    None if verbose || line.starts_with("error") => eprintln!("{label} helper: {line}"),
+                    None if verbose || line.starts_with("error") => {
+                        eprintln!("{label} helper: {line}")
+                    }
                     None => {}
                 }
             }
@@ -126,7 +142,10 @@ impl Headphones {
             Ok(line) => line,
             Err(RecvTimeoutError::Timeout) => {
                 let _ = child.kill();
-                return Err(io::Error::new(io::ErrorKind::TimedOut, format!("{label} channel did not open in time")));
+                return Err(io::Error::new(
+                    io::ErrorKind::TimedOut,
+                    format!("{label} channel did not open in time"),
+                ));
             }
             Err(RecvTimeoutError::Disconnected) => "error: the helper exited".to_string(),
         };
@@ -186,7 +205,9 @@ impl Transport for Channel {
     fn receive(&mut self, wait: Duration) -> io::Result<Vec<u8>> {
         let buffer = match self.data.recv_timeout(wait) {
             Ok(buffer) => buffer,
-            Err(RecvTimeoutError::Timeout) => return Err(io::Error::new(io::ErrorKind::TimedOut, "timed out")),
+            Err(RecvTimeoutError::Timeout) => {
+                return Err(io::Error::new(io::ErrorKind::TimedOut, "timed out"));
+            }
             Err(RecvTimeoutError::Disconnected) => {
                 return Err(io::Error::new(
                     io::ErrorKind::UnexpectedEof,
