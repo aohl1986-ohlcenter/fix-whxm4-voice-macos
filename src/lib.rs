@@ -1,4 +1,8 @@
 pub mod audio;
+#[cfg(target_os = "linux")]
+pub mod bluetooth;
+#[cfg(target_os = "macos")]
+#[path = "bluetooth_macos.rs"]
 pub mod bluetooth;
 pub mod build;
 pub mod changes;

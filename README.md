@@ -1,4 +1,91 @@
-# fix-whxm4-voice
+# fix-whxm4-voice for macOS
+
+Turn the chatty voice prompts of **Sony WH-1000XM4** headphones into short, quiet tones, from a **Mac**:
+"Bluetooth connected", "Bluetooth device two disconnected", "Power off", "Battery about seventy percent".
+No Linux machine, no iPhone, no proxy, no root.
+
+The Sony app can switch voice guidance off, but many prompts stay, and with two devices connected
+(multipoint: Mac and phone) every lost or regained connection talks over your audio. This tool replaces
+the clips of the voice pack itself.
+
+This is a macOS port of [aaron-p1/fix-whxm4-voice](https://github.com/aaron-p1/fix-whxm4-voice), which
+does the real work (pack format, upload protocol, safety guard) but needs Linux and BlueZ. The port adds
+a small Swift helper that talks to the headphones through macOS Bluetooth, see
+[ADR 0006](docs/adr/0006-macos-through-an-iobluetooth-helper.md). Everything else is upstream's, and
+upstream's readme follows below.
+
+## Quick start on a Mac
+
+You need the Xcode command line tools (`xcode-select --install`), Rust and ffmpeg:
+
+```bash
+brew install rustup ffmpeg && rustup-init -y
+```
+
+Build (this also builds the Bluetooth helper):
+
+```bash
+git clone https://github.com/aohl1986-ohlcenter/fix-whxm4-voice-macos.git
+cd fix-whxm4-voice-macos
+cargo build --release
+```
+
+Connect the headphones to the Mac in the Bluetooth settings, then work in an empty directory:
+
+```bash
+mkdir ~/xm4-voice && cd ~/xm4-voice
+~/fix-whxm4-voice-macos/target/release/fix-whxm4-voice download            # stock English clips into original/
+~/fix-whxm4-voice-macos/target/release/fix-whxm4-voice generate --battery  # tone theme into changes/
+~/fix-whxm4-voice-macos/sounds/extra.sh changes                            # optional, see below
+~/fix-whxm4-voice-macos/target/release/fix-whxm4-voice device-info         # read-only check
+~/fix-whxm4-voice-macos/target/release/fix-whxm4-voice upload --dry-run    # shows the plan, writes nothing
+~/fix-whxm4-voice-macos/target/release/fix-whxm4-voice upload              # asks you to type `upload`
+```
+
+(Adjust the paths to where you cloned the repository.)
+
+The first command that talks to the headphones makes macOS ask for Bluetooth access for **xm4-rfcomm**.
+Allow it. If you denied it, allow it in System Settings → Privacy & Security → Bluetooth.
+
+Before the upload: charge the headphones, stop all audio on every connected device, close the Sony app
+on your phone and keep the headphones near the Mac. After the progress bar, the headphones power off,
+install the pack and come back; `device-info` then reports German as the current language, because the
+pack is installed in the German slot (English cannot be replaced, see upstream's readme).
+
+**What changes with the default theme plus `--battery`:** power on/off, connected/disconnected,
+per-device connect/disconnect, connection lost, second device connected, low battery and the volume
+step become tones; the battery prompts shrink to the number ("seventy", "full").
+
+**`sounds/extra.sh`** also turns the noise canceling / ambient sound button prompts (slots 06–08) into
+short dots and "device replaced" (51/52) into the connect tone. Without it, those stay spoken.
+
+**Back to Sony's prompts:** pick a voice guidance language in the Sony app. The app installs Sony's
+own pack again. Changing the language in the app later also brings Sony's prompts back.
+
+### Tested
+
+On one MacBook (Apple Silicon, macOS 26) with a WH-1000XM4 on firmware 3.0.1, on 28 October 2026:
+`device-info`, `upload --dry-run` and one real upload with the theme above. The headphones passed
+their checksum check, installed the pack and reported German afterwards. That is one device, once.
+Read [SAFETY.md](SAFETY.md) before you upload.
+
+### Other ways
+
+- **Linux:** use [upstream](https://github.com/aaron-p1/fix-whxm4-voice) directly.
+- **iPhone:** [SantiMoncada/sony-xm4-voice-mod](https://github.com/SantiMoncada/sony-xm4-voice-mod)
+  serves a modified pack to the Sony app through mitmproxy. This does not work on Android, where apps
+  don't trust user-installed certificates.
+
+### Disclaimer
+
+Not affiliated with, endorsed by or supported by Sony. Modifying the voice pack is not supported by
+Sony, may void your warranty and could, in the worst case, leave the headphones unusable. You use it
+at your own risk. No Sony audio is in this repository; the tool downloads the voice packs from Sony's
+public update server.
+
+---
+
+# Upstream readme: fix-whxm4-voice
 
 This readme was written by a human. All other files were vibe coded.
 

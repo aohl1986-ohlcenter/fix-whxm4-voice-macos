@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>fix-whxm4-voice.xm4-rfcomm</string>
+	<key>CFBundleName</key>
+	<string>xm4-rfcomm</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Talks to the WH-1000XM4 over Bluetooth to read device info and upload a voice pack.</string>
+</dict>
+</plist>
